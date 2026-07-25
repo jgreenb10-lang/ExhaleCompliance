@@ -1,5 +1,5 @@
 import React from "react";
-import { Check, X, CheckCircle2, Wallet, Briefcase } from "lucide-react";
+import { Check, X, CheckCircle2, Wallet, Briefcase, MapPin, User, Phone } from "lucide-react";
 import { C } from "../../theme";
 import { TopBar, Card, Pill, Stat, EmptyState } from "../../components/ui";
 import { money, fmtDate } from "../../lib/format";
@@ -16,16 +16,43 @@ export function VendorJobsView({ vendor, quotes, sites, onRespond, onComplete })
 
   const JobRow = ({ q, actions }) => {
     const site = sites.find((s) => s.id === q.siteId);
+    const contact = site?.contact;
     return (
-      <div className="flex items-center justify-between gap-3 px-5 py-4" style={{ borderBottom: `1px solid ${C.line}` }}>
-        <div className="min-w-0">
-          <div className="text-sm font-medium truncate" style={{ color: C.ink }}>{q.title}</div>
-          <div className="text-xs mt-0.5" style={{ color: C.subtle }}>{site?.name} · due {fmtDate(q.dueDate)}</div>
+      <div className="px-5 py-4" style={{ borderBottom: `1px solid ${C.line}` }}>
+        <div className="flex items-center justify-between gap-3 mb-2">
+          <div className="min-w-0">
+            <div className="text-sm font-medium truncate" style={{ color: C.ink }}>{q.title}</div>
+            <div className="text-xs mt-0.5" style={{ color: C.subtle }}>{site?.name} · due {fmtDate(q.dueDate)}</div>
+          </div>
+          <div className="flex items-center gap-3 shrink-0">
+            <span className="text-sm font-medium" style={{ color: C.ink }}>{money(q.vendorCost)}</span>
+            {actions}
+          </div>
         </div>
-        <div className="flex items-center gap-3 shrink-0">
-          <span className="text-sm font-medium" style={{ color: C.ink }}>{money(q.vendorCost)}</span>
-          {actions}
-        </div>
+        {(site?.address || contact) && (
+          <div className="flex flex-col gap-1 mt-2 rounded-lg px-3 py-2" style={{ background: C.paper }}>
+            {site?.address && (
+              <div className="flex items-center gap-1.5 text-xs" style={{ color: C.subtle }}>
+                <MapPin size={12} style={{ color: C.faint }} className="shrink-0" />
+                <span className="truncate">{site.address}</span>
+              </div>
+            )}
+            {contact && (
+              <div className="flex items-center gap-3 text-xs flex-wrap" style={{ color: C.subtle }}>
+                <span className="flex items-center gap-1.5">
+                  <User size={12} style={{ color: C.faint }} className="shrink-0" />
+                  {contact.name}{contact.role ? ` · ${contact.role}` : ""}
+                </span>
+                {contact.phone && (
+                  <span className="flex items-center gap-1.5">
+                    <Phone size={12} style={{ color: C.faint }} className="shrink-0" />
+                    {contact.phone}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     );
   };

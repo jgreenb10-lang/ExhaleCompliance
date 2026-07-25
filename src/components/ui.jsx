@@ -35,10 +35,10 @@ const TONE_COLORS = {
   info: [C.info, C.infoSoft],
 };
 
-export function Stat({ label, value, sub, icon: Icon, tone = "brand" }) {
+export function Stat({ label, value, sub, icon: Icon, tone = "brand", onClick }) {
   const [fg, bg] = TONE_COLORS[tone] || TONE_COLORS.brand;
   return (
-    <Card className="p-4 sm:p-5">
+    <Card className="p-4 sm:p-5" onClick={onClick} style={onClick ? { outline: "none" } : undefined}>
       <div className="flex items-center justify-between mb-3">
         <span className="text-xs font-medium uppercase tracking-wide" style={{ color: C.faint }}>{label}</span>
         {Icon && (
