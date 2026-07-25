@@ -68,6 +68,41 @@ export function scoreTone(score) {
   return "bad";
 }
 
+export function ScoreRing({ value, size = 112, tone, label }) {
+  const resolvedTone = tone || scoreTone(value);
+  const [fg] = TONE_COLORS[resolvedTone] || TONE_COLORS.brand;
+  const r = 50;
+  const c = 2 * Math.PI * r;
+  const offset = c * (1 - Math.max(0, Math.min(100, value)) / 100);
+  return (
+    <div className="relative shrink-0" style={{ width: size, height: size }}>
+      <svg viewBox="0 0 120 120" width={size} height={size} style={{ transform: "rotate(-90deg)" }}>
+        <circle cx="60" cy="60" r={r} fill="none" stroke={C.line} strokeWidth="10" />
+        <circle cx="60" cy="60" r={r} fill="none" stroke={fg} strokeWidth="10" strokeLinecap="round"
+          strokeDasharray={c} strokeDashoffset={offset} style={{ transition: "stroke-dashoffset 0.4s ease" }} />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className="font-display text-2xl" style={{ color: C.ink, fontWeight: 600 }}>{value}</span>
+        {label && <span className="text-[10px] font-medium uppercase tracking-wide mt-0.5" style={{ color: C.faint }}>{label}</span>}
+      </div>
+    </div>
+  );
+}
+
+export function StatusBanner({ tone = "brand", icon: Icon, children }) {
+  const [fg, bg] = TONE_COLORS[tone] || TONE_COLORS.brand;
+  return (
+    <div className="flex items-center gap-3 rounded-xl px-4 py-3.5 mb-6" style={{ background: bg }}>
+      {Icon && (
+        <span className="grid place-items-center w-8 h-8 rounded-lg shrink-0" style={{ background: C.surface, color: fg }}>
+          <Icon size={16} />
+        </span>
+      )}
+      <span className="text-sm font-medium" style={{ color: fg }}>{children}</span>
+    </div>
+  );
+}
+
 export function EmptyState({ Icon = Inbox, title, hint, action }) {
   return (
     <div className="flex flex-col items-center justify-center text-center py-16 px-6">

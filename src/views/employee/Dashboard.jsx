@@ -1,10 +1,10 @@
 import React from "react";
 import {
   Building2, DollarSign, AlertTriangle, Receipt, CheckCircle2, FileText,
-  CalendarClock, Wrench, Handshake, ArrowRight, Users, Share2, RefreshCw,
+  CalendarClock, Wrench, Handshake, ArrowRight, Users, Share2, RefreshCw, ShieldCheck,
 } from "lucide-react";
 import { C } from "../../theme";
-import { TopBar, Stat, Card, Pill } from "../../components/ui";
+import { TopBar, Stat, Card, Pill, StatusBanner } from "../../components/ui";
 import { money, fmtDateLong } from "../../lib/format";
 import { overdueCount, dueSoonCount, contractStatus, scheduleForSites } from "../../lib/schedule";
 import { STAGE_LABELS } from "../../data/status";
@@ -12,10 +12,10 @@ import { STAGE_LABELS } from "../../data/status";
 const ACTIVITY_ICON = { passed: CheckCircle2, report: FileText, scheduled: CalendarClock, vendor: Wrench, signed: Handshake };
 
 const QUICK_LINKS = [
-  { key: "leads", label: "Leads board", icon: Users },
-  { key: "schedule", label: "Full schedule", icon: CalendarClock },
-  { key: "quotes", label: "All quotes", icon: Receipt },
-  { key: "network", label: "Vendor network", icon: Share2 },
+  { key: "leads", label: "Leads", icon: Users },
+  { key: "schedule", label: "Schedule", icon: CalendarClock },
+  { key: "quotes", label: "Quotes", icon: Receipt },
+  { key: "network", label: "Network", icon: Share2 },
 ];
 
 function SectionCard({ title, action, children, empty }) {
@@ -44,25 +44,36 @@ export default function EmployeeDashboard({ sites, quotes, leads, activity, cont
 
   const goToSite = (siteId) => { setSelectedSite(siteId); setActive("siteDetail"); };
 
+  const bannerTone = overdue > 0 ? "bad" : dueSoon > 10 ? "warn" : "good";
+  const bannerIcon = overdue > 0 ? AlertTriangle : ShieldCheck;
+  const bannerText = overdue > 0
+    ? `${overdue} check${overdue === 1 ? "" : "s"} across the portfolio ${overdue === 1 ? "is" : "are"} overdue and need scheduling.`
+    : dueSoon > 0
+      ? `Portfolio is on track. ${dueSoon} check${dueSoon === 1 ? "" : "s"} due in the next 30 days.`
+      : "Portfolio is fully on track — nothing overdue or due soon.";
+
   return (
     <div>
       <TopBar
         title="Dashboard"
-        subtitle={`Here's what needs attention today, ${fmtDateLong(new Date()).replace(/, \d{4}$/, "")}.`}
+        subtitle={fmtDateLong(new Date())}
+        actions={
+          <div className="hidden sm:flex items-center gap-1">
+            {QUICK_LINKS.map(({ key, label, icon: Icon }) => (
+              <button
+                key={key}
+                onClick={() => setActive(key)}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors hover:bg-black/[0.03]"
+                style={{ color: C.subtle }}
+              >
+                <Icon size={13} /> {label}
+              </button>
+            ))}
+          </div>
+        }
       />
 
-      <div className="flex flex-wrap gap-2 mb-6">
-        {QUICK_LINKS.map(({ key, label, icon: Icon }) => (
-          <button
-            key={key}
-            onClick={() => setActive(key)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors hover:bg-black/[0.03]"
-            style={{ border: `1px solid ${C.line}`, color: C.ink, background: C.surface }}
-          >
-            <Icon size={14} style={{ color: C.brand }} /> {label}
-          </button>
-        ))}
-      </div>
+      <StatusBanner tone={bannerTone} icon={bannerIcon}>{bannerText}</StatusBanner>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
         <Stat label="Active sites" value={sites.length} icon={Building2} tone="brand" sub={`${sites.length} under contract`} onClick={() => setActive("sites")} />
@@ -72,10 +83,10 @@ export default function EmployeeDashboard({ sites, quotes, leads, activity, cont
       </div>
 
       {worstOverdue.length > 0 && (
-        <Card className="p-0 overflow-hidden mb-6" style={{ borderColor: C.bad }}>
+        <Card className="p-0 overflow-hidden mb-6">
           <div className="flex items-center gap-2 px-5 py-4" style={{ borderBottom: `1px solid ${C.line}` }}>
             <AlertTriangle size={16} style={{ color: C.bad }} />
-            <span className="text-sm font-medium" style={{ color: C.ink }}>Needs attention now — overdue checks</span>
+            <span className="text-sm font-medium" style={{ color: C.ink }}>Most overdue</span>
           </div>
           {worstOverdue.map((item) => (
             <div key={`${item.siteId}-${item.checkKey}`} className="flex items-center justify-between gap-3 px-5 py-3 cursor-pointer hover:bg-black/[0.02]"
@@ -94,7 +105,7 @@ export default function EmployeeDashboard({ sites, quotes, leads, activity, cont
         <SectionCard title="Recent activity">
           <div>
             {activity.length === 0 && <div className="px-5 py-8 text-sm text-center" style={{ color: C.faint }}>No activity yet.</div>}
-            {activity.map((a) => {
+            {activity.slice(0, 6).map((a) => {
               const Icon = ACTIVITY_ICON[a.type] || FileText;
               return (
                 <div key={a.id} className="flex items-start gap-3 px-5 py-3" style={{ borderBottom: `1px solid ${C.line}` }}>

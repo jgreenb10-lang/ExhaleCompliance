@@ -1,5 +1,5 @@
 import React from "react";
-import { Check, X, CheckCircle2, Wallet, Briefcase, MapPin, User, Phone } from "lucide-react";
+import { Check, X, CheckCircle2, Wallet, Briefcase, MapPin, User, Phone, Inbox } from "lucide-react";
 import { C } from "../../theme";
 import { TopBar, Card, Pill, Stat, EmptyState } from "../../components/ui";
 import { money, fmtDate } from "../../lib/format";
@@ -57,9 +57,19 @@ export function VendorJobsView({ vendor, quotes, sites, onRespond, onComplete })
     );
   };
 
+  const completedCount = jobs.filter((q) => q.vendorStatus === "completed").length;
+  const totalEarned = jobs.filter((q) => q.vendorStatus === "completed").reduce((sum, q) => sum + q.vendorCost, 0);
+
   return (
     <div>
       <TopBar title="Jobs" subtitle={`Work offered and in progress for ${vendor.name}.`} />
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+        <Stat label="New offers" value={offered.length} icon={Inbox} tone={offered.length ? "warn" : "brand"} sub="Awaiting your response" />
+        <Stat label="In progress" value={accepted.length} icon={Briefcase} tone="info" sub="Accepted jobs" />
+        <Stat label="Completed" value={completedCount} icon={CheckCircle2} tone="good" sub="Jobs finished" />
+        <Stat label="Total earned" value={money(totalEarned)} icon={Wallet} tone="good" sub="Lifetime payout" />
+      </div>
 
       {offered.length > 0 && (
         <div className="mb-6">

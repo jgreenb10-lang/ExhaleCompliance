@@ -1,7 +1,7 @@
 import React from "react";
-import { ArrowRight, Plus, FileText, ShieldCheck, CalendarClock, MessageSquarePlus, Download, Clock } from "lucide-react";
+import { ArrowRight, Plus, FileText, CalendarClock, MessageSquarePlus, Download, Clock } from "lucide-react";
 import { C } from "../../theme";
-import { TopBar, Card, Pill, Stat, PrimaryButton, scoreTone, ScheduleRow, EmptyState } from "../../components/ui";
+import { TopBar, Card, Pill, Stat, PrimaryButton, ScoreRing, ScheduleRow, EmptyState } from "../../components/ui";
 import { overallScore, scheduleForSite } from "../../lib/schedule";
 import { money, margin, fmtDate } from "../../lib/format";
 import { QUOTE_STATUS_LABELS } from "../../data/status";
@@ -10,8 +10,17 @@ import { industryOf } from "../../data/catalog";
 export function ClientDashboard({ site, quotes, setShowNewQuote, setActive }) {
   const score = overallScore(site);
   const schedule = scheduleForSite(site);
-  const upcoming = schedule.filter((s) => s.status !== "ok").slice(0, 5);
+  const overdue = schedule.filter((s) => s.status === "overdue");
+  const upcoming = schedule.filter((s) => s.status !== "ok").slice(0, 4);
   const openRequests = quotes.filter((q) => q.siteId === site.id && q.status !== "contracted");
+
+  const statusTone = overdue.length > 0 ? "bad" : upcoming.length > 0 ? "warn" : "good";
+  const statusColor = statusTone === "bad" ? C.bad : statusTone === "warn" ? C.warn : C.good;
+  const statusText = overdue.length > 0
+    ? `${overdue.length} check${overdue.length === 1 ? " is" : "s are"} overdue — action recommended.`
+    : upcoming.length > 0
+      ? `In good standing. ${upcoming.length} check${upcoming.length === 1 ? "" : "s"} due soon.`
+      : "In good standing. Nothing due or overdue.";
 
   return (
     <div>
@@ -21,11 +30,18 @@ export function ClientDashboard({ site, quotes, setShowNewQuote, setActive }) {
         actions={<PrimaryButton onClick={() => setShowNewQuote(site.id)}><Plus size={15} /> Request service</PrimaryButton>}
       />
 
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-        <Stat label="Compliance score" value={score} icon={ShieldCheck} tone={scoreTone(score)} sub="Across all tracked checks" />
-        <Stat label="Needs attention" value={upcoming.length} icon={CalendarClock} tone={upcoming.length ? "warn" : "good"} sub="Checks due or overdue" />
-        <Stat label="Open requests" value={openRequests.length} icon={FileText} tone="info" sub="In progress with Exhale" />
-      </div>
+      <Card className="p-5 sm:p-6 mb-6">
+        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
+          <ScoreRing value={score} label="Compliance" tone={statusTone} />
+          <div className="flex-1 w-full text-center sm:text-left">
+            <div className="text-base font-medium mb-3" style={{ color: statusColor }}>{statusText}</div>
+            <div className="grid grid-cols-2 gap-3">
+              <Stat label="Needs attention" value={upcoming.length} icon={CalendarClock} tone={upcoming.length ? "warn" : "good"} sub="Due or overdue" onClick={() => setActive("schedule")} />
+              <Stat label="Open requests" value={openRequests.length} icon={FileText} tone="info" sub="In progress" />
+            </div>
+          </div>
+        </div>
+      </Card>
 
       <Card className="p-0 overflow-hidden">
         <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: `1px solid ${C.line}` }}>
