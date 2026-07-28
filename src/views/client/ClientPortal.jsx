@@ -121,10 +121,10 @@ const DOCS = [
   { name: "Site Photo Documentation", updated: "Feb 20, 2026" },
 ];
 
-export function ClientDocuments() {
+export function ClientDocuments({ site }) {
   return (
     <div>
-      <TopBar title="Documents" subtitle="Certificates and inspection records on file." />
+      <TopBar title="Documents" subtitle={site ? `Certificates and inspection records for ${site.name}.` : "Certificates and inspection records on file."} />
       <Card className="p-0 overflow-hidden">
         {DOCS.map((d) => (
           <div key={d.name} className="flex items-center justify-between gap-3 px-5 py-4" style={{ borderBottom: `1px solid ${C.line}` }}>

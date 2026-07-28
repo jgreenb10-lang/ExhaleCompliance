@@ -211,7 +211,7 @@ export default function App() {
     if (active === "dashboard") content = <ClientDashboard site={clientSite} sites={clientSites} activeSiteId={clientSite.id} onSwitchSite={setClientSiteId} quotes={quotes} setShowNewQuote={setShowNewQuoteFor} setActive={setActive} />;
     else if (active === "schedule") content = <ScheduleView sites={[clientSite]} clientMode setActive={setActive} setSelectedSite={setSelectedSite} />;
     else if (active === "requests") content = <ClientRequests site={clientSite} quotes={quotes} setShowNewQuote={setShowNewQuoteFor} />;
-    else if (active === "documents") content = <ClientDocuments />;
+    else if (active === "documents") content = <ClientDocuments site={clientSite} />;
   }
 
   if (!content) content = <EmptyState title="Nothing here" hint="Pick a section from the navigation to get started." />;
