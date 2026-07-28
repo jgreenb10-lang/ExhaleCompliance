@@ -36,7 +36,7 @@ export const initialVendors = [
   { id: 2, name: "Redline Fire & Safety", checks: ["fire_extinguisher", "kitchen_suppression", "fire_alarm", "fire_sprinklers", "hangar_suppression"], rate: 55, capacity: 6, type: "subcontractor", rating: 4.9 },
   { id: 3, name: "Cascade Mechanical", checks: ["hvac_maintenance", "emergency_generator", "ups_battery", "insulation_resistance", "thermal_scan", "panel_clearance"], rate: 90, capacity: 5, type: "subcontractor", rating: 4.6 },
   { id: 4, name: "Northwest Backflow Co.", checks: ["backflow_prevention", "grease_trap", "water_heater_tp", "ammonia_refrigeration", "legionella_testing"], rate: 65, capacity: 7, type: "subcontractor", rating: 4.7 },
-  { id: 5, name: "In-House Maintenance Team", checks: ["fire_extinguisher", "exit_lighting", "walking_surfaces"], rate: 30, capacity: 10, type: "in_house", rating: 5.0 },
+  { id: 5, name: "In-House Maintenance Team", checks: ["fire_extinguisher", "exit_lighting", "walking_surfaces", "playground_safety"], rate: 30, capacity: 10, type: "in_house", rating: 5.0 },
 ];
 
 export const initialQuotes = [
@@ -95,4 +95,12 @@ export const initialActivity = [
   { id: 506, type: "report", title: "Free audit completed", detail: "Golden Gate Daycare — 2 findings", date: "Jul 12, 2026" },
   { id: 507, type: "vendor", title: "Invite email sent", detail: "Evergreen Backflow Testing", date: "Jul 10, 2026" },
   { id: 508, type: "passed", title: "Job completed", detail: "Kitchen Hood Suppression System — Riverside Grill", date: "Jul 8, 2026" },
+];
+
+// Open marketplace bids: quotes with no vendor assigned (vendorId: null,
+// vendorStatus: "unassigned") post automatically to every vendor whose
+// `checks` cover that quote's category — see Marketplace.jsx.
+export const initialBids = [
+  { id: 601, quoteId: 205, vendorId: 3, vendorName: "Cascade Mechanical", amount: 110, note: "Can do same week.", submittedAt: "Jul 22" },
+  { id: 602, quoteId: 208, vendorId: 5, vendorName: "In-House Maintenance Team", amount: 140, note: "", submittedAt: "Jul 23" },
 ];

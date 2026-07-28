@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { X, Send, FileCheck2, Handshake } from "lucide-react";
+import { X, Send, FileCheck2, Handshake, Gavel } from "lucide-react";
 import { C } from "../theme";
 import { CHECKS, checkOf } from "../data/catalog";
 import { money, margin, marginPct, fmtDate } from "../lib/format";
@@ -41,7 +41,7 @@ function Field({ label, children }) {
 const inputStyle = { background: C.surface, border: `1px solid ${C.line}`, color: C.ink };
 const inputClass = "w-full rounded-lg px-3 py-2 text-sm outline-none focus:border-[color:var(--brand)]";
 
-export function QuotePanel({ quote, site, vendors, onClose, onUpdate }) {
+export function QuotePanel({ quote, site, vendors, bids = [], onClose, onUpdate, onAwardBid }) {
   const [clientPrice, setClientPrice] = useState(quote.clientPrice);
   const [vendorCost, setVendorCost] = useState(quote.vendorCost);
   const [vendorId, setVendorId] = useState(quote.vendorId || "");
@@ -99,6 +99,28 @@ export function QuotePanel({ quote, site, vendors, onClose, onUpdate }) {
           ))}
         </select>
       </Field>
+
+      {!quote.vendorId && bids.length > 0 && (
+        <Field label={`Bids received (${bids.length})`}>
+          <div className="flex flex-col gap-2">
+            {bids.map((b) => (
+              <Card key={b.id} className="p-3 flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="text-sm font-medium truncate" style={{ color: C.ink }}>{b.vendorName}</div>
+                  <div className="text-xs" style={{ color: C.subtle }}>{money(b.amount)}{b.note ? ` · ${b.note}` : ""}</div>
+                </div>
+                <button
+                  onClick={() => { onAwardBid(b); onClose(); }}
+                  className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-md text-white shrink-0"
+                  style={{ background: C.brand }}
+                >
+                  <Gavel size={13} /> Award
+                </button>
+              </Card>
+            ))}
+          </div>
+        </Field>
+      )}
 
       <Field label="Due date">
         <div className="text-sm" style={{ color: C.ink }}>{fmtDate(quote.dueDate)}</div>

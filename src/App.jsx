@@ -11,7 +11,7 @@ import { fmtDate, money } from "./lib/format";
 import { quotesFromFindings } from "./lib/quotes";
 import {
   initialSites, initialVendors, initialRecruits, initialQuotes,
-  initialLeads, initialContracts, initialActivity, CLIENT_SITE_ID,
+  initialLeads, initialContracts, initialActivity, initialBids, CLIENT_SITE_ID,
 } from "./data/seed";
 import PortalPicker from "./components/PortalPicker";
 import { Sidebar, MobileHeader, BottomNav } from "./components/Nav";
@@ -23,6 +23,7 @@ import { LeadsBoard, NewLeadModal } from "./views/employee/Leads";
 import { ContractsView, ScheduleView } from "./views/employee/Contracts";
 import NetworkView from "./views/employee/Network";
 import { VendorJobsView, VendorEarningsView } from "./views/vendor/VendorPortal";
+import { MarketplaceView } from "./views/vendor/Marketplace";
 import { ClientDashboard, ClientRequests, ClientDocuments } from "./views/client/ClientPortal";
 
 export default function App() {
@@ -35,6 +36,7 @@ export default function App() {
   const [recruits, setRecruits] = useState(initialRecruits);
   const [activity, setActivity] = useState(initialActivity);
   const [contracts, setContracts] = useState(initialContracts);
+  const [bids, setBids] = useState(initialBids);
   const VENDOR_IDENTITY_ID = 2; // Redline Fire & Safety
   const [selectedSiteId, setSelectedSite] = useState(null);
   const [openedQuote, setOpenedQuote] = useState(null);
@@ -145,6 +147,27 @@ export default function App() {
     logActivity("passed", "Job completed", q?.title || "");
   };
 
+  /* --- vendor marketplace: unassigned quotes post to every matching vendor,
+     who bid instead of waiting to be manually assigned --- */
+  const submitBid = (quoteId, vendorId, amount, note) => {
+    const vendor = vendors.find(v => v.id === vendorId);
+    const q = quotes.find(x => x.id === quoteId);
+    setBids(bs => {
+      const existing = bs.find(b => b.quoteId === quoteId && b.vendorId === vendorId);
+      const entry = { id: existing?.id ?? Date.now(), quoteId, vendorId, vendorName: vendor?.name, amount, note, submittedAt: fmtDate(TODAY) };
+      return existing ? bs.map(b => (b.quoteId === quoteId && b.vendorId === vendorId ? entry : b)) : [...bs, entry];
+    });
+    logActivity("vendor", "New bid submitted", `${vendor?.name} — ${q?.title || ""}`);
+  };
+  const awardBid = (bid) => {
+    setQuotes(qs => qs.map(q => q.id === bid.quoteId
+      ? { ...q, vendorId: bid.vendorId, vendor: bid.vendorName, vendorCost: bid.amount, vendorStatus: "accepted" }
+      : q));
+    setBids(bs => bs.filter(b => b.quoteId !== bid.quoteId));
+    const q = quotes.find(x => x.id === bid.quoteId);
+    logActivity("vendor", "Bid awarded", `${bid.vendorName} — ${q?.title || ""}`);
+  };
+
   const setRecruitStatus = (id, status) => setRecruits(rs => rs.map(r => {
     if (r.id !== id) return r;
     if (status === "invited") logActivity("vendor", "Invite email sent", r.company);
@@ -178,6 +201,7 @@ export default function App() {
     const me = vendors.find(v => v.id === VENDOR_IDENTITY_ID) || vendors[0];
     if (!me) content = <EmptyState Icon={Wrench} title="Vendor account not found" hint="Contact Exhale to get your account linked." />;
     else if (active === "earnings") content = <VendorEarningsView vendor={me} quotes={quotes} sites={sites} />;
+    else if (active === "marketplace") content = <MarketplaceView vendor={me} quotes={quotes} sites={sites} bids={bids} onBid={submitBid} />;
     else content = <VendorJobsView vendor={me} quotes={quotes} sites={sites} onRespond={respondToJob} onComplete={completeJob} />;
   } else if (!clientSite) {
     content = <EmptyState Icon={Building2} title="No location linked" hint="Contact your account manager to get your location connected." />;
@@ -205,7 +229,15 @@ export default function App() {
       </div>
 
       {openedQuote && (
-        <QuotePanel quote={openedQuote} site={sites.find(b => b.id === openedQuote.siteId)} vendors={vendors} onClose={() => setOpenedQuote(null)} onUpdate={updateQuote} />
+        <QuotePanel
+          quote={openedQuote}
+          site={sites.find(b => b.id === openedQuote.siteId)}
+          vendors={vendors}
+          bids={bids.filter(b => b.quoteId === openedQuote.id)}
+          onClose={() => setOpenedQuote(null)}
+          onUpdate={updateQuote}
+          onAwardBid={awardBid}
+        />
       )}
       {showNewQuoteFor && (
         <NewQuoteModal sites={sites} defaultSiteId={showNewQuoteFor} source={role} onClose={() => setShowNewQuoteFor(null)} onCreate={createQuote} />

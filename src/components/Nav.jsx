@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import {
   LayoutDashboard, Building2, CalendarClock, Users, FileText, Receipt,
   Share2, MessageSquarePlus, FolderOpen, Briefcase, Wallet, LogOut,
-  MoreHorizontal, X, Leaf,
+  MoreHorizontal, X, Leaf, Store,
 } from "lucide-react";
 import { C } from "../theme";
 
@@ -24,6 +24,7 @@ const NAV_ITEMS = {
   ],
   vendor: [
     { key: "jobs", label: "Jobs", icon: Briefcase },
+    { key: "marketplace", label: "Marketplace", icon: Store },
     { key: "earnings", label: "Earnings", icon: Wallet },
   ],
 };
