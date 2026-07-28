@@ -42,13 +42,14 @@ function Logo() {
   );
 }
 
-export function Sidebar({ active, setActive, role, onLogout, vendorName }) {
+export function Sidebar({ active, setActive, role, onLogout, vendorName, clientName }) {
   const items = NAV_ITEMS[role] || [];
+  const accountName = role === "vendor" ? vendorName : role === "client" ? clientName : null;
   return (
     <aside className="hidden md:flex md:flex-col w-64 shrink-0 h-full px-3 py-5" style={{ background: C.surface, borderRight: `1px solid ${C.line}` }}>
       <Logo />
       <div className="mt-1 px-2 text-xs" style={{ color: C.faint }}>{ROLE_LABEL[role]}</div>
-      {role === "vendor" && vendorName && <div className="mt-2 px-2 text-sm font-medium" style={{ color: C.brand }}>{vendorName}</div>}
+      {accountName && <div className="mt-2 px-2 text-sm font-medium" style={{ color: C.brand }}>{accountName}</div>}
       <nav className="mt-6 flex-1 flex flex-col gap-1">
         {items.map(({ key, label, icon: Icon }) => {
           const isActive = active === key;

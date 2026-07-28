@@ -11,7 +11,7 @@ import { fmtDate, money } from "./lib/format";
 import { quotesFromFindings } from "./lib/quotes";
 import {
   initialSites, initialVendors, initialRecruits, initialQuotes,
-  initialLeads, initialContracts, initialActivity, initialBids, CLIENT_ID,
+  initialLeads, initialContracts, initialActivity, initialBids, initialClients, CLIENT_ID,
 } from "./data/seed";
 import PortalPicker from "./components/PortalPicker";
 import { Sidebar, MobileHeader, BottomNav } from "./components/Nav";
@@ -184,6 +184,7 @@ export default function App() {
 
   const clientSites = sites.filter(b => b.clientId === CLIENT_ID);
   const clientSite = clientSites.find(b => b.id === clientSiteId) || clientSites[0];
+  const clientAccount = initialClients.find(c => c.id === CLIENT_ID);
   const selectedSite = sites.find(b => b.id === selectedSiteId);
   const logout = () => { setRole(null); setSelectedSite(null); setActive("dashboard"); };
 
@@ -220,7 +221,8 @@ export default function App() {
     <div className="flex h-screen w-full overflow-hidden" style={{ background: C.paper }}>
       <style>{FONT_IMPORT}</style>
       <Sidebar active={active} setActive={setActive} role={role} onLogout={logout}
-        vendorName={(vendors.find(v => v.id === VENDOR_IDENTITY_ID) || vendors[0])?.name} />
+        vendorName={(vendors.find(v => v.id === VENDOR_IDENTITY_ID) || vendors[0])?.name}
+        clientName={clientAccount?.name} />
       <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
         <MobileHeader onLogout={logout} />
         <div className="flex-1 overflow-y-auto px-4 py-5 sm:px-6 md:px-9 md:py-8 pb-24 md:pb-8"
