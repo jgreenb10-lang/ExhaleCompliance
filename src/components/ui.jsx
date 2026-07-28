@@ -1,5 +1,5 @@
 import React from "react";
-import { Inbox, ChevronRight } from "lucide-react";
+import { Inbox, ChevronRight, Landmark } from "lucide-react";
 import { C } from "../theme";
 import { fmtDate } from "../lib/format";
 
@@ -59,6 +59,27 @@ export function Pill({ children, tone = "brand" }) {
     <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium" style={{ color: fg, background: bg }}>
       {children}
     </span>
+  );
+}
+
+export function IndustryBadge({ industry }) {
+  return (
+    <div className="inline-flex flex-col gap-1">
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium w-fit" style={{ background: C.brandSoft, color: C.brand }}>
+        <Landmark size={12} /> {industry.label}
+      </span>
+      {industry.regulators && (
+        <span className="text-[11px]" style={{ color: C.faint }}>Regulated by {industry.regulators}</span>
+      )}
+    </div>
+  );
+}
+
+export function DomainHeader({ domain }) {
+  return (
+    <div className="px-5 py-2 text-[11px] font-semibold uppercase tracking-wide" style={{ color: C.faint, background: C.paper, borderBottom: `1px solid ${C.line}` }}>
+      {domain.label}
+    </div>
   );
 }
 

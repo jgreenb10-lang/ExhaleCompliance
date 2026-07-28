@@ -1,7 +1,7 @@
 import React from "react";
 import { ArrowRight, Plus, FileText, CalendarClock, MessageSquarePlus, Download, Clock } from "lucide-react";
 import { C } from "../../theme";
-import { TopBar, Card, Pill, Stat, PrimaryButton, ScoreRing, ScheduleRow, EmptyState } from "../../components/ui";
+import { TopBar, Card, Pill, Stat, PrimaryButton, ScoreRing, ScheduleRow, EmptyState, IndustryBadge } from "../../components/ui";
 import { overallScore, scheduleForSite } from "../../lib/schedule";
 import { money, margin, fmtDate } from "../../lib/format";
 import { QUOTE_STATUS_LABELS } from "../../data/status";
@@ -26,9 +26,13 @@ export function ClientDashboard({ site, quotes, setShowNewQuote, setActive }) {
     <div>
       <TopBar
         title={site.name}
-        subtitle={`${site.city} · ${industryOf(site.industry).label}`}
+        subtitle={site.city}
         actions={<PrimaryButton onClick={() => setShowNewQuote(site.id)}><Plus size={15} /> Request service</PrimaryButton>}
       />
+
+      <div className="mb-6">
+        <IndustryBadge industry={industryOf(site.industry)} />
+      </div>
 
       <Card className="p-5 sm:p-6 mb-6">
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
@@ -84,10 +88,10 @@ export function ClientRequests({ site, quotes, setShowNewQuote }) {
 
 const DOCS = [
   { name: "Certificate of Insurance", updated: "Jan 3, 2026" },
-  { name: "Fire Extinguisher Inspection Reports", updated: "Jun 12, 2026" },
-  { name: "Ansul System Service Records", updated: "Feb 20, 2026" },
-  { name: "Health Department Self-Audit", updated: "May 4, 2026" },
   { name: "Signed Service Agreement", updated: "Jun 1, 2024" },
+  { name: "Most Recent Inspection Reports", updated: "Jun 12, 2026" },
+  { name: "Compliance Summary", updated: "May 4, 2026" },
+  { name: "Site Photo Documentation", updated: "Feb 20, 2026" },
 ];
 
 export function ClientDocuments() {

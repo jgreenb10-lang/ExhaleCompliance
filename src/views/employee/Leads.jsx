@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { Plus, X, ArrowRight, ClipboardCheck, Send, PenLine, CheckCircle2 } from "lucide-react";
 import { C } from "../../theme";
-import { TopBar, Card, Pill, PrimaryButton } from "../../components/ui";
+import { TopBar, Card, Pill, PrimaryButton, DomainHeader } from "../../components/ui";
 import { STAGE_ORDER, STAGE_LABELS } from "../../data/status";
-import { INDUSTRIES, industryOf, checkOf } from "../../data/catalog";
+import { INDUSTRIES, industryOf, checkOf, domainOf } from "../../data/catalog";
 import { money } from "../../lib/format";
 
 const inputStyle = { background: C.surface, border: `1px solid ${C.line}`, color: C.ink };
@@ -36,40 +36,56 @@ function AuditModal({ lead, onClose, onComplete }) {
     onClose();
   };
 
+  const grouped = {};
+  items.forEach((it, idx) => {
+    const domainKey = checkOf(it.checkKey).domain;
+    (grouped[domainKey] ||= []).push({ item: it, idx });
+  });
+  const groups = Object.keys(grouped)
+    .map((key) => ({ domain: domainOf(key), entries: grouped[key] }))
+    .sort((a, b) => a.domain.label.localeCompare(b.domain.label));
+
   return (
     <Modal onClose={onClose} title={`Free audit — ${lead.name}`} wide>
-      <div className="flex flex-col gap-3 mb-5">
-        {items.map((it, idx) => {
-          const check = checkOf(it.checkKey);
-          return (
-            <Card key={it.checkKey} className="p-3">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium" style={{ color: C.ink }}>{check.label}</span>
-                <div className="flex gap-1">
-                  {["pass", "fail", "na"].map((s) => (
-                    <button key={s} onClick={() => setItem(idx, { status: s })}
-                      className="px-2.5 py-1 rounded-md text-xs font-medium capitalize"
-                      style={{
-                        background: it.status === s ? (s === "fail" ? C.bad : s === "pass" ? C.good : C.faint) : "transparent",
-                        color: it.status === s ? "#fff" : C.subtle,
-                        border: `1px solid ${it.status === s ? "transparent" : C.line}`,
-                      }}>
-                      {s}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              {it.status === "fail" && (
-                <input
-                  className={inputClass} style={{ ...inputStyle, fontSize: 13 }}
-                  placeholder="Note what you found..."
-                  value={it.note}
-                  onChange={(e) => setItem(idx, { note: e.target.value })}
-                />
-              )}
-            </Card>
-          );
-        })}
+      <div className="flex flex-col gap-5 mb-5">
+        {groups.map(({ domain, entries }) => (
+          <div key={domain.key}>
+            <div className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: C.faint }}>{domain.label}</div>
+            <div className="flex flex-col gap-3">
+              {entries.map(({ item: it, idx }) => {
+                const check = checkOf(it.checkKey);
+                return (
+                  <Card key={it.checkKey} className="p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium" style={{ color: C.ink }}>{check.label}</span>
+                      <div className="flex gap-1">
+                        {["pass", "fail", "na"].map((s) => (
+                          <button key={s} onClick={() => setItem(idx, { status: s })}
+                            className="px-2.5 py-1 rounded-md text-xs font-medium capitalize"
+                            style={{
+                              background: it.status === s ? (s === "fail" ? C.bad : s === "pass" ? C.good : C.faint) : "transparent",
+                              color: it.status === s ? "#fff" : C.subtle,
+                              border: `1px solid ${it.status === s ? "transparent" : C.line}`,
+                            }}>
+                            {s}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    {it.status === "fail" && (
+                      <input
+                        className={inputClass} style={{ ...inputStyle, fontSize: 13 }}
+                        placeholder="Note what you found..."
+                        value={it.note}
+                        onChange={(e) => setItem(idx, { note: e.target.value })}
+                      />
+                    )}
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </div>
       <PrimaryButton onClick={submit} className="justify-center w-full">Complete audit</PrimaryButton>
     </Modal>

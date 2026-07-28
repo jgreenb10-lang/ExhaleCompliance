@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { ArrowLeft, Plus, Search, MapPin } from "lucide-react";
 import { C } from "../../theme";
-import { TopBar, Card, Pill, scoreTone, ScheduleRow, PrimaryButton, EmptyState } from "../../components/ui";
+import { TopBar, Card, Pill, scoreTone, ScheduleRow, PrimaryButton, EmptyState, IndustryBadge, DomainHeader } from "../../components/ui";
 import { industryOf } from "../../data/catalog";
-import { overallScore, scheduleForSite } from "../../lib/schedule";
+import { overallScore, scheduleForSite, groupByDomain } from "../../lib/schedule";
 import { money, margin } from "../../lib/format";
 import { QUOTE_STATUS_LABELS } from "../../data/status";
 import { Building2 } from "lucide-react";
@@ -61,6 +61,7 @@ export function SitesList({ sites, setActive, setSelectedSite, quotes }) {
 export function SiteDetail({ site, quotes, setActive, openQuote, setShowNewQuote }) {
   const score = overallScore(site);
   const schedule = scheduleForSite(site);
+  const grouped = groupByDomain(schedule);
   const siteQuotes = quotes.filter((q) => q.siteId === site.id);
 
   return (
@@ -70,9 +71,13 @@ export function SiteDetail({ site, quotes, setActive, openQuote, setShowNewQuote
       </button>
       <TopBar
         title={site.name}
-        subtitle={`${site.city} · ${industryOf(site.industry).label} · ${site.assets} tracked assets`}
+        subtitle={`${site.city} · ${site.assets} tracked assets`}
         actions={<PrimaryButton onClick={() => setShowNewQuote(site.id)}><Plus size={15} /> New quote</PrimaryButton>}
       />
+
+      <div className="mb-6">
+        <IndustryBadge industry={industryOf(site.industry)} />
+      </div>
 
       <div className="grid sm:grid-cols-3 gap-4 mb-6">
         <Card className="p-4">
@@ -91,9 +96,14 @@ export function SiteDetail({ site, quotes, setActive, openQuote, setShowNewQuote
 
       <div className="grid lg:grid-cols-2 gap-4">
         <Card className="p-0 overflow-hidden">
-          <div className="px-5 py-4 text-sm font-medium" style={{ borderBottom: `1px solid ${C.line}`, color: C.ink }}>Check schedule</div>
+          <div className="px-5 py-4 text-sm font-medium" style={{ borderBottom: `1px solid ${C.line}`, color: C.ink }}>Check schedule by compliance domain</div>
           <div>
-            {schedule.map((item) => <ScheduleRow key={item.checkKey} item={item} />)}
+            {grouped.map(({ domain, items }) => (
+              <div key={domain.key}>
+                <DomainHeader domain={domain} />
+                {items.map((item) => <ScheduleRow key={item.checkKey} item={item} />)}
+              </div>
+            ))}
           </div>
         </Card>
 

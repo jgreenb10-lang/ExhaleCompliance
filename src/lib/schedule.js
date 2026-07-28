@@ -2,7 +2,7 @@
    site + check so the demo is deterministic across refreshes — in
    production this becomes last_inspected_at + cadence. */
 
-import { checkOf, cadenceDays } from "../data/catalog";
+import { checkOf, cadenceDays, domainOf } from "../data/catalog";
 import { daysBetween } from "./format";
 
 export const TODAY = new Date(2026, 6, 24);
@@ -60,6 +60,17 @@ export function contractStatus(contract) {
   if (daysUntil < 0) return "expired";
   if (daysUntil <= 90) return "renewing";
   return "active";
+}
+
+export function groupByDomain(items) {
+  const groups = {};
+  items.forEach((item) => {
+    const key = item.check.domain;
+    (groups[key] ||= []).push(item);
+  });
+  return Object.keys(groups)
+    .map((key) => ({ domain: domainOf(key), items: groups[key] }))
+    .sort((a, b) => a.domain.label.localeCompare(b.domain.label));
 }
 
 export function overallScore(site) {

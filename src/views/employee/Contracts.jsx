@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { RefreshCw, Filter } from "lucide-react";
 import { C } from "../../theme";
-import { TopBar, Card, Pill, ScheduleRow, EmptyState } from "../../components/ui";
+import { TopBar, Card, Pill, ScheduleRow, EmptyState, DomainHeader } from "../../components/ui";
 import { CalendarClock } from "lucide-react";
-import { contractStatus, scheduleForSites } from "../../lib/schedule";
+import { contractStatus, scheduleForSites, groupByDomain } from "../../lib/schedule";
 import { money, fmtDate } from "../../lib/format";
 import { CONTRACT_STATUS_LABELS } from "../../data/status";
 
@@ -53,12 +53,13 @@ function fmtDateFull(d) {
 export function ScheduleView({ sites, setActive, setSelectedSite, clientMode }) {
   const [filter, setFilter] = useState("all");
   const items = scheduleForSites(sites).filter((i) => filter === "all" || i.status === filter);
+  const grouped = groupByDomain(items);
 
   const goToSite = clientMode ? undefined : (siteId) => { setSelectedSite(siteId); setActive("siteDetail"); };
 
   return (
     <div>
-      <TopBar title="Schedule" subtitle={clientMode ? "Your upcoming compliance checks." : "Every recurring check across the portfolio."} />
+      <TopBar title="Schedule" subtitle={clientMode ? "Your upcoming compliance checks, grouped by domain." : "Every recurring check across the portfolio, grouped by compliance domain."} />
 
       <div className="flex items-center gap-2 mb-4">
         <Filter size={14} style={{ color: C.faint }} />
@@ -76,8 +77,13 @@ export function ScheduleView({ sites, setActive, setSelectedSite, clientMode }) 
       </div>
 
       <Card className="p-0 overflow-hidden">
-        {items.map((item) => (
-          <ScheduleRow key={`${item.siteId}-${item.checkKey}`} item={item} onClick={goToSite ? () => goToSite(item.siteId) : undefined} />
+        {grouped.map(({ domain, items: domainItems }) => (
+          <div key={domain.key}>
+            <DomainHeader domain={domain} />
+            {domainItems.map((item) => (
+              <ScheduleRow key={`${item.siteId}-${item.checkKey}`} item={item} onClick={goToSite ? () => goToSite(item.siteId) : undefined} />
+            ))}
+          </div>
         ))}
         {items.length === 0 && <EmptyState Icon={CalendarClock} title="Nothing here" hint="No checks match this filter." />}
       </Card>
