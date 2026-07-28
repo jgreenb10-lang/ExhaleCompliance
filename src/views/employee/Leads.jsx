@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Plus, X, ArrowRight, ClipboardCheck, Send, PenLine, CheckCircle2 } from "lucide-react";
+import { Plus, X, ArrowRight, ClipboardCheck, Send, PenLine, CheckCircle2, Camera } from "lucide-react";
 import { C } from "../../theme";
 import { TopBar, Card, Pill, PrimaryButton, DomainHeader } from "../../components/ui";
 import { STAGE_ORDER, STAGE_LABELS } from "../../data/status";
@@ -26,7 +26,7 @@ function Modal({ onClose, title, children, wide }) {
 
 function AuditModal({ lead, onClose, onComplete }) {
   const checks = industryOf(lead.industry).checks;
-  const [items, setItems] = useState(() => checks.map((key) => ({ checkKey: key, status: "pass", note: "", photo: false })));
+  const [items, setItems] = useState(() => checks.map((key) => ({ checkKey: key, status: "pass", note: "", photoUrl: null, photoName: null })));
 
   const setItem = (idx, patch) => setItems((cur) => cur.map((it, i) => (i === idx ? { ...it, ...patch } : it)));
 
@@ -73,12 +73,36 @@ function AuditModal({ lead, onClose, onComplete }) {
                       </div>
                     </div>
                     {it.status === "fail" && (
-                      <input
-                        className={inputClass} style={{ ...inputStyle, fontSize: 13 }}
-                        placeholder="Note what you found..."
-                        value={it.note}
-                        onChange={(e) => setItem(idx, { note: e.target.value })}
-                      />
+                      <>
+                        <input
+                          className={inputClass} style={{ ...inputStyle, fontSize: 13 }}
+                          placeholder="Note what you found..."
+                          value={it.note}
+                          onChange={(e) => setItem(idx, { note: e.target.value })}
+                        />
+                        <div className="mt-2">
+                          {it.photoUrl ? (
+                            <div className="flex items-center gap-2">
+                              <img src={it.photoUrl} alt="" className="w-10 h-10 rounded-md object-cover" style={{ border: `1px solid ${C.line}` }} />
+                              <span className="text-xs truncate flex-1" style={{ color: C.subtle }}>{it.photoName}</span>
+                              <button onClick={() => setItem(idx, { photoUrl: null, photoName: null })} style={{ color: C.faint }}>
+                                <X size={14} />
+                              </button>
+                            </div>
+                          ) : (
+                            <label className="inline-flex items-center gap-1.5 text-xs font-medium cursor-pointer" style={{ color: C.brand }}>
+                              <Camera size={13} /> Attach photo
+                              <input
+                                type="file" accept="image/*" className="hidden"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) setItem(idx, { photoUrl: URL.createObjectURL(file), photoName: file.name });
+                                }}
+                              />
+                            </label>
+                          )}
+                        </div>
+                      </>
                     )}
                   </Card>
                 );
