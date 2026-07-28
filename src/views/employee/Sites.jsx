@@ -8,52 +8,94 @@ import { money, margin } from "../../lib/format";
 import { QUOTE_STATUS_LABELS } from "../../data/status";
 import { Building2 } from "lucide-react";
 
+function SiteCard({ s, quotes, onOpen }) {
+  const score = overallScore(s);
+  const openQuotes = quotes.filter((qq) => qq.siteId === s.id && qq.status !== "contracted").length;
+  return (
+    <Card className="p-4" onClick={onOpen}>
+      <div className="flex items-start justify-between mb-2">
+        <div>
+          <div className="font-medium" style={{ color: C.ink }}>{s.name}</div>
+          <div className="text-xs flex items-center gap-1 mt-0.5" style={{ color: C.subtle }}>
+            <MapPin size={12} /> {s.city}
+          </div>
+        </div>
+        <Pill tone={scoreTone(score)}>{score}</Pill>
+      </div>
+      <div className="flex items-center justify-between text-xs mt-3" style={{ color: C.faint }}>
+        <span>{s.assets} assets</span>
+        {openQuotes > 0 && <Pill tone="warn">{openQuotes} open</Pill>}
+      </div>
+    </Card>
+  );
+}
+
 export function SitesList({ sites, setActive, setSelectedSite, quotes }) {
   const [q, setQ] = useState("");
+  const [view, setView] = useState("industry");
   const filtered = sites.filter((s) => `${s.name} ${s.city}`.toLowerCase().includes(q.toLowerCase()));
+  const openSite = (id) => { setSelectedSite(id); setActive("siteDetail"); };
+
+  const groups = {};
+  filtered.forEach((s) => (groups[s.industry] ||= []).push(s));
+  const byIndustry = Object.keys(groups)
+    .map((key) => ({ industry: industryOf(key), sites: groups[key] }))
+    .sort((a, b) => a.industry.label.localeCompare(b.industry.label));
 
   return (
     <div>
       <TopBar title="Sites" subtitle={`${sites.length} active locations under contract.`} />
-      <div className="relative mb-5 max-w-sm">
-        <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: C.faint }} />
-        <input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Search sites..."
-          className="w-full rounded-lg pl-9 pr-3 py-2 text-sm outline-none"
-          style={{ background: C.surface, border: `1px solid ${C.line}`, color: C.ink }}
-        />
+
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
+        <div className="relative max-w-sm flex-1 min-w-[220px]">
+          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: C.faint }} />
+          <input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Search sites..."
+            className="w-full rounded-lg pl-9 pr-3 py-2 text-sm outline-none"
+            style={{ background: C.surface, border: `1px solid ${C.line}`, color: C.ink }}
+          />
+        </div>
+        <div className="flex gap-1">
+          {[{ key: "industry", label: "By industry" }, { key: "all", label: "All sites" }].map((v) => (
+            <button key={v.key} onClick={() => setView(v.key)}
+              className="px-2.5 py-1.5 rounded-lg text-xs font-medium"
+              style={{
+                background: view === v.key ? C.brand : "transparent",
+                color: view === v.key ? "#fff" : C.subtle,
+                border: `1px solid ${view === v.key ? C.brand : C.line}`,
+              }}>
+              {v.label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
-        {filtered.map((s) => {
-          const score = overallScore(s);
-          const openQuotes = quotes.filter((qq) => qq.siteId === s.id && qq.status !== "contracted").length;
-          return (
-            <Card key={s.id} className="p-4" onClick={() => { setSelectedSite(s.id); setActive("siteDetail"); }}>
-              <div className="flex items-start justify-between mb-2">
-                <div>
-                  <div className="font-medium" style={{ color: C.ink }}>{s.name}</div>
-                  <div className="text-xs flex items-center gap-1 mt-0.5" style={{ color: C.subtle }}>
-                    <MapPin size={12} /> {s.city}
-                  </div>
-                </div>
-                <Pill tone={scoreTone(score)}>{score}</Pill>
+      {filtered.length === 0 && <EmptyState Icon={Building2} title="No sites found" hint="Try a different search term." />}
+
+      {filtered.length > 0 && view === "all" && (
+        <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
+          {filtered.map((s) => <SiteCard key={s.id} s={s} quotes={quotes} onOpen={() => openSite(s.id)} />)}
+        </div>
+      )}
+
+      {filtered.length > 0 && view === "industry" && (
+        <div className="flex flex-col gap-8">
+          {byIndustry.map(({ industry, sites: group }) => (
+            <div key={industry.key}>
+              <div className="flex items-baseline gap-2 mb-1">
+                <span className="text-sm font-semibold" style={{ color: C.ink }}>{industry.label}</span>
+                <Pill tone="brand">{group.length}</Pill>
               </div>
-              <div className="flex items-center justify-between text-xs mt-3" style={{ color: C.faint }}>
-                <span>{industryOf(s.industry).label} · {s.assets} assets</span>
-                {openQuotes > 0 && <Pill tone="warn">{openQuotes} open</Pill>}
+              <p className="text-xs mb-3" style={{ color: C.faint }}>Regulated by {industry.regulators}</p>
+              <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                {group.map((s) => <SiteCard key={s.id} s={s} quotes={quotes} onOpen={() => openSite(s.id)} />)}
               </div>
-            </Card>
-          );
-        })}
-        {filtered.length === 0 && (
-          <div className="sm:col-span-2 xl:col-span-3">
-            <EmptyState Icon={Building2} title="No sites found" hint="Try a different search term." />
-          </div>
-        )}
-      </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
