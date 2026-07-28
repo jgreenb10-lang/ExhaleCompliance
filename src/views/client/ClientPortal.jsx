@@ -1,5 +1,5 @@
 import React from "react";
-import { ArrowRight, Plus, FileText, CalendarClock, MessageSquarePlus, Download, Clock } from "lucide-react";
+import { ArrowRight, Plus, FileText, CalendarClock, MessageSquarePlus, Download, Clock, MapPin } from "lucide-react";
 import { C } from "../../theme";
 import { TopBar, Card, Pill, Stat, PrimaryButton, ScoreRing, ScheduleRow, EmptyState, IndustryBadge } from "../../components/ui";
 import { overallScore, scheduleForSite } from "../../lib/schedule";
@@ -7,7 +7,32 @@ import { money, margin, fmtDate } from "../../lib/format";
 import { QUOTE_STATUS_LABELS } from "../../data/status";
 import { industryOf } from "../../data/catalog";
 
-export function ClientDashboard({ site, quotes, setShowNewQuote, setActive }) {
+function SiteSwitcher({ sites, activeSiteId, onSwitchSite }) {
+  if (!sites || sites.length < 2) return null;
+  return (
+    <div className="flex flex-wrap gap-2 mb-5">
+      {sites.map((s) => {
+        const isActive = s.id === activeSiteId;
+        return (
+          <button
+            key={s.id}
+            onClick={() => onSwitchSite(s.id)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium"
+            style={{
+              background: isActive ? C.brand : C.surface,
+              color: isActive ? "#fff" : C.ink,
+              border: `1px solid ${isActive ? C.brand : C.line}`,
+            }}
+          >
+            <MapPin size={13} /> {s.name}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+export function ClientDashboard({ site, sites, activeSiteId, onSwitchSite, quotes, setShowNewQuote, setActive }) {
   const score = overallScore(site);
   const schedule = scheduleForSite(site);
   const overdue = schedule.filter((s) => s.status === "overdue");
@@ -29,6 +54,8 @@ export function ClientDashboard({ site, quotes, setShowNewQuote, setActive }) {
         subtitle={site.city}
         actions={<PrimaryButton onClick={() => setShowNewQuote(site.id)}><Plus size={15} /> Request service</PrimaryButton>}
       />
+
+      <SiteSwitcher sites={sites} activeSiteId={activeSiteId} onSwitchSite={onSwitchSite} />
 
       <div className="mb-6">
         <IndustryBadge industry={industryOf(site.industry)} />

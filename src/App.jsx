@@ -11,7 +11,7 @@ import { fmtDate, money } from "./lib/format";
 import { quotesFromFindings } from "./lib/quotes";
 import {
   initialSites, initialVendors, initialRecruits, initialQuotes,
-  initialLeads, initialContracts, initialActivity, initialBids, CLIENT_SITE_ID,
+  initialLeads, initialContracts, initialActivity, initialBids, CLIENT_ID,
 } from "./data/seed";
 import PortalPicker from "./components/PortalPicker";
 import { Sidebar, MobileHeader, BottomNav } from "./components/Nav";
@@ -42,6 +42,7 @@ export default function App() {
   const [openedQuote, setOpenedQuote] = useState(null);
   const [showNewQuoteFor, setShowNewQuoteFor] = useState(null);
   const [showNewLead, setShowNewLead] = useState(false);
+  const [clientSiteId, setClientSiteId] = useState(null);
 
   if (!role) return <PortalPicker onEnter={(m) => { setRole(m); setActive(m === "vendor" ? "jobs" : "dashboard"); }} />;
 
@@ -181,7 +182,8 @@ export default function App() {
     logActivity("vendor", "Vendor activated", `${recruit.company} — $${rate}/check`);
   };
 
-  const clientSite = sites.find(b => b.id === CLIENT_SITE_ID);
+  const clientSites = sites.filter(b => b.clientId === CLIENT_ID);
+  const clientSite = clientSites.find(b => b.id === clientSiteId) || clientSites[0];
   const selectedSite = sites.find(b => b.id === selectedSiteId);
   const logout = () => { setRole(null); setSelectedSite(null); setActive("dashboard"); };
 
@@ -206,7 +208,7 @@ export default function App() {
   } else if (!clientSite) {
     content = <EmptyState Icon={Building2} title="No location linked" hint="Contact your account manager to get your location connected." />;
   } else {
-    if (active === "dashboard") content = <ClientDashboard site={clientSite} quotes={quotes} setShowNewQuote={setShowNewQuoteFor} setActive={setActive} />;
+    if (active === "dashboard") content = <ClientDashboard site={clientSite} sites={clientSites} activeSiteId={clientSite.id} onSwitchSite={setClientSiteId} quotes={quotes} setShowNewQuote={setShowNewQuoteFor} setActive={setActive} />;
     else if (active === "schedule") content = <ScheduleView sites={[clientSite]} clientMode setActive={setActive} setSelectedSite={setSelectedSite} />;
     else if (active === "requests") content = <ClientRequests site={clientSite} quotes={quotes} setShowNewQuote={setShowNewQuoteFor} />;
     else if (active === "documents") content = <ClientDocuments />;

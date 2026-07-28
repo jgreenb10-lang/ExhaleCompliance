@@ -2,7 +2,13 @@
    Sites are spread one-per-industry so the catalog rebuild (8 verticals x
    6 compliance domains) is visible across the whole demo. */
 
-export const CLIENT_SITE_ID = 7;
+// The client portal signs in as this client, scoped to every site they own
+// (not a single hardcoded site) — see App.jsx's clientSites/clientSite.
+export const CLIENT_ID = 1;
+
+export const initialClients = [
+  { id: 1, name: "Downtown Property Group", primaryContact: "Theo Papas", email: "theo@downtownloftspdx.com" },
+];
 
 export const initialSites = [
   { id: 1, name: "Riverside Grill", city: "Portland, OR", address: "412 SW River Pkwy, Portland, OR 97201", industry: "food_hospitality", assets: 14,
@@ -23,12 +29,15 @@ export const initialSites = [
   { id: 6, name: "Bright Start Academy", city: "Tacoma, WA", address: "2210 6th Ave, Tacoma, WA 98403", industry: "education", assets: 12,
     contact: { name: "Karen Bell", role: "Director", phone: "253-555-0121", email: "karen.bell@brightstartacademy.com" },
     categories: { fire_extinguisher: 93, exit_lighting: 90, iaq_co2: 85, chemical_storage: 94, playground_safety: 77, egress_pathways: 96, backflow_prevention: 91 } },
-  { id: 7, name: "Downtown Lofts Apartments", city: "Portland, OR", address: "88 SW 3rd Ave, Portland, OR 97204", industry: "residential", assets: 9,
+  { id: 7, name: "Downtown Lofts Apartments", city: "Portland, OR", address: "88 SW 3rd Ave, Portland, OR 97204", industry: "residential", assets: 9, clientId: 1,
     contact: { name: "Theo Papas", role: "Property Manager", phone: "503-555-0198", email: "theo@downtownloftspdx.com" },
     categories: { fire_extinguisher: 92, exit_lighting: 88, water_heater_tp: 79, guardrails: 86, ada_signage: 94, egress_pathways: 90 } },
   { id: 8, name: "Lakeside Manufacturing Plant", city: "Spokane, WA", address: "801 N Lakeside Dr, Spokane, WA 99201", industry: "industrial", assets: 33,
     contact: { name: "Priya Malhotra", role: "Plant Manager", phone: "509-555-0156", email: "priya.malhotra@lakesidemfg.com" },
     categories: { fire_extinguisher: 95, panel_clearance: 88, thermal_scan: 91, dust_containment: 80, chemical_storage: 90, walking_surfaces: 91, guardrails: 86, ammonia_refrigeration: 93 } },
+  { id: 9, name: "Riverside Commons Apartments", city: "Portland, OR", address: "1450 SE Riverside Dr, Portland, OR 97214", industry: "residential", assets: 14, clientId: 1,
+    contact: { name: "Maria Alvarez", role: "On-Site Manager", phone: "503-555-0177", email: "maria@downtownloftspdx.com" },
+    categories: { fire_extinguisher: 90, exit_lighting: 85, water_heater_tp: 88, guardrails: 92, ada_signage: 91, egress_pathways: 87 } },
 ];
 
 export const initialVendors = [
@@ -77,6 +86,7 @@ export const initialContracts = [
   { id: 306, siteId: 6, termYears: 1, startedOn: "Oct 2025", renewsOn: new Date(2026, 9, 5), annualValue: 6200, checks: ["fire_extinguisher", "exit_lighting", "iaq_co2", "chemical_storage", "playground_safety", "egress_pathways", "backflow_prevention"] },
   { id: 307, siteId: 7, termYears: 3, startedOn: "Jun 2024", renewsOn: new Date(2027, 5, 1), annualValue: 4100, checks: ["fire_extinguisher", "exit_lighting", "water_heater_tp", "guardrails", "ada_signage", "egress_pathways"] },
   { id: 308, siteId: 8, termYears: 2, startedOn: "Dec 2024", renewsOn: new Date(2026, 11, 1), annualValue: 12800, checks: ["fire_extinguisher", "panel_clearance", "thermal_scan", "dust_containment", "chemical_storage", "walking_surfaces", "guardrails", "ammonia_refrigeration"] },
+  { id: 309, siteId: 9, termYears: 2, startedOn: "Mar 2025", renewsOn: new Date(2027, 2, 1), annualValue: 5200, checks: ["fire_extinguisher", "exit_lighting", "water_heater_tp", "guardrails", "ada_signage", "egress_pathways"] },
 ];
 
 export const initialRecruits = [
